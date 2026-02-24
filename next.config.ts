@@ -1,7 +1,8 @@
-import type { NextConfig } from "next";
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  // Prevents Next.js from bundling pdf-parse, avoiding its test-file side-effects
+  serverExternalPackages: ['pdf-parse'],
 };
 
 export default nextConfig;
