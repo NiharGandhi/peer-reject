@@ -48,6 +48,7 @@ export default function HomePage() {
           <span className="text-lg font-light tracking-[0.2em] uppercase" style={{ color: 'var(--t3)' }}>Reject</span>
         </div>
         <div className="flex items-center gap-5">
+          <a href="/blog" className="text-[10px] uppercase tracking-widest hidden sm:block font-medium transition-colors hover:opacity-80" style={{ color: 'var(--t3)' }}>Blog</a>
           <span className="text-[10px] uppercase tracking-widest hidden sm:block font-medium" style={{ color: 'var(--t3)' }}>K2 Think V2</span>
           <ThemeToggle />
           <LanguageToggle />

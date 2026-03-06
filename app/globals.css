@@ -239,6 +239,15 @@ body {
   animation: fadeIn 0.4s ease both;
 }
 
+/* ── Blog card hover ──────────────────────────────────────────────────────── */
+.blog-card {
+  background: var(--bg1);
+  transition: background 0.2s ease;
+}
+.blog-card:hover {
+  background: var(--bg2);
+}
+
 /* ── Persona card carousel (mobile) ──────────────────────────────────────── */
 .persona-scroll {
   display: flex;
