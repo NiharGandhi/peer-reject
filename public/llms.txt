@@ -1,0 +1,34 @@
+# Peer Reject
+
+> AI-powered grant rejection simulator. Upload a research proposal (PDF) and receive adversarial reviews from parallel K2 Think V2 agents in under 2 minutes.
+
+## What it does
+
+- Simulates an adversarial grant review committee using AI
+- Runs 3–7 specialized reviewer agents simultaneously (Methodology, Budget, Novelty, Domain, Presentation, Statistical Rigor, Survey Completeness)
+- Produces: formal rejection letter, severity-ranked weakness report (Fatal / Major / Minor), numbered fix recommendations, and a revised abstract
+- Powered by MBZUAI / IFM K2 Think V2 reasoning model — a frontier chain-of-thought reasoning model
+
+## Who it's for
+
+Researchers, academics, and PhD students submitting grant proposals or papers who want to discover fatal flaws before the real committee does.
+
+## Key facts
+
+- Review time: ~120 seconds end-to-end
+- Agent types: 7 active (Methodology, Budget & Feasibility, Novelty, Domain Expert, Presentation, Statistical Rigor, Survey Completeness), 2 coming soon (Ethics & Compliance, Reproducibility)
+- Output sections: 4 — Decision Letter, Identified Weaknesses, How to Fix It, Revised Abstract
+- Document types supported: Grant proposals, journal papers, clinical trials, theses, surveys, conference papers, position papers, technical reports
+- Severity tiers: Fatal (blocks funding), Major (requires significant revision), Minor (polish-level issues)
+- Input: PDF upload, up to 10 MB
+- No login required, stateless, session-based
+
+## Technology
+
+- K2 Think V2 by MBZUAI / IFM Research Institute
+- Streaming SSE — reviews stream token-by-token in real-time
+- Built for the Build with K2 Think V2 competition
+
+## Source
+
+https://peer-reject.vercel.app/

@@ -124,7 +124,7 @@ export default function HomePage() {
           <div className="flex flex-col gap-3">
             <div className="ui-card p-2 shadow-2xl" style={{ background: 'var(--bg1)' }}>
               <div className="rounded-[calc(var(--radius-card)-6px)] overflow-hidden"
-                style={{ border: '1px dashed var(--border)', background: 'rgba(0,0,0,0.25)' }}>
+                style={{ border: '1px dashed var(--border)', background: 'var(--bg2)' }}>
                 <UploadZone
                   ref={uploadRef}
                   onFile={handleFile}
