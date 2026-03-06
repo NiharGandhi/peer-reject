@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
+// pdf-parse v2 depends on `canvas` which references DOMMatrix at module load.
+// Node.js serverless environments don't expose it as a global — stub it out.
+if (typeof globalThis.DOMMatrix === 'undefined') {
+  // @ts-expect-error minimal stub; canvas only needs the constructor to not throw
+  globalThis.DOMMatrix = class DOMMatrix {};
+}
+
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
