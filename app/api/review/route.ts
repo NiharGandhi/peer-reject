@@ -1,54 +1,47 @@
 import { NextRequest } from 'next/server';
 import { streamK2, parseSSEStream } from '@/lib/k2client';
-import { CHEN_PROMPT, HARRINGTON_PROMPT, ALMANSOURI_PROMPT } from '@/lib/prompts';
+import { AGENT_PROMPTS, type AgentId } from '@/lib/agentConfig';
 
 export const runtime = 'nodejs';
-export const maxDuration = 120;
-
-type PersonaId = 'chen' | 'harrington' | 'almansouri';
-
-interface PersonaConfig {
-  id: PersonaId;
-  systemPrompt: string;
-}
-
-const PERSONAS: PersonaConfig[] = [
-  { id: 'chen', systemPrompt: CHEN_PROMPT },
-  { id: 'harrington', systemPrompt: HARRINGTON_PROMPT },
-  { id: 'almansouri', systemPrompt: ALMANSOURI_PROMPT },
-];
+export const maxDuration = 180;
 
 export async function POST(req: NextRequest) {
-  const { proposalText } = await req.json();
+  const { proposalText, agents } = await req.json() as {
+    proposalText: string;
+    agents: AgentId[];
+  };
 
   if (!proposalText || typeof proposalText !== 'string') {
     return new Response('Missing proposalText', { status: 400 });
+  }
+  if (!Array.isArray(agents) || agents.length === 0) {
+    return new Response('Missing agents array', { status: 400 });
   }
 
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream({
     async start(controller) {
-      const enqueue = (persona: PersonaId, chunk: string) => {
+      const enqueue = (agentId: string, chunk: string) => {
         try {
-          controller.enqueue(
-            encoder.encode(`data: ${JSON.stringify({ persona, chunk })}\n\n`)
-          );
-        } catch {
-          // controller already closed
-        }
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ agentId, chunk })}\n\n`));
+        } catch { /* controller closed */ }
       };
 
-      const streamPersona = async ({ id, systemPrompt }: PersonaConfig) => {
+      const reviewAgent = async (id: AgentId) => {
+        const systemPrompt = AGENT_PROMPTS[id];
+        if (!systemPrompt) {
+          enqueue(id, '[ERROR]');
+          return;
+        }
         try {
           const k2Stream = await streamK2([
             { role: 'system', content: systemPrompt },
             {
               role: 'user',
-              content: `Please review this grant proposal:\n\n${proposalText}`,
+              content: `Conduct a thorough, rigorous review of the following document. Apply your specific expertise. Cite SPECIFIC text, numbers, and data from the document to support every point. Be precise and academically substantive — vague feedback is unacceptable.\n\nDOCUMENT:\n${proposalText}`,
             },
           ]);
-
           for await (const chunk of parseSSEStream(k2Stream)) {
             enqueue(id, chunk);
           }
@@ -59,9 +52,7 @@ export async function POST(req: NextRequest) {
         }
       };
 
-      // Fire all 3 persona reviews simultaneously
-      await Promise.all(PERSONAS.map(streamPersona));
-
+      await Promise.all(agents.map(reviewAgent));
       controller.close();
     },
   });

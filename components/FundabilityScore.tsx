@@ -13,37 +13,12 @@ function calcScore(fatal: number, major: number, minor: number): number {
 }
 
 const LEVELS = [
-  { max: 25,  label: 'Not Fundable',           color: '#d03030' },
-  { max: 45,  label: 'Critically Weak',         color: '#d46030' },
-  { max: 65,  label: 'Major Revision Required', color: '#c49030' },
-  { max: 80,  label: 'Revision Required',       color: '#b0a030' },
-  { max: 101, label: 'Fundable',                color: '#30a070' },
+  { max: 25, label: 'Not Fundable', color: 'var(--cr)' },
+  { max: 45, label: 'Critically Weak', color: 'var(--cr)' },
+  { max: 65, label: 'Major Revision Required', color: 'var(--t2)' },
+  { max: 80, label: 'Revision Required', color: 'var(--t1)' },
+  { max: 101, label: 'Fundable', color: 'var(--t1)' },
 ] as const;
-
-// SVG arc score ring
-function ScoreRing({ score, color, animated }: { score: number; color: string; animated: boolean }) {
-  const r = 44;
-  const circumference = 2 * Math.PI * r;
-  const offset = circumference - (animated ? (score / 100) * circumference : circumference);
-  return (
-    <svg width="120" height="120" viewBox="0 0 100 100">
-      {/* Track */}
-      <circle cx="50" cy="50" r={r} fill="none" stroke="var(--bg3)" strokeWidth="7" />
-      {/* Fill */}
-      <circle
-        cx="50" cy="50" r={r}
-        fill="none"
-        stroke={color}
-        strokeWidth="7"
-        strokeLinecap="round"
-        strokeDasharray={circumference}
-        strokeDashoffset={offset}
-        transform="rotate(-90 50 50)"
-        style={{ transition: 'stroke-dashoffset 1.2s cubic-bezier(0.34,1.56,0.64,1)' }}
-      />
-    </svg>
-  );
-}
 
 export default function FundabilityScore({ fatal, major, minor }: Props) {
   const [animated, setAnimated] = useState(false);
@@ -51,68 +26,51 @@ export default function FundabilityScore({ fatal, major, minor }: Props) {
   const level = LEVELS.find((l) => score < l.max) ?? LEVELS[LEVELS.length - 1];
 
   useEffect(() => {
-    const t = setTimeout(() => setAnimated(true), 200);
+    const t = setTimeout(() => setAnimated(true), 150);
     return () => clearTimeout(t);
   }, []);
 
   return (
-    <div
-      className="rounded-2xl px-6 py-5 flex flex-col sm:flex-row gap-5 items-start sm:items-center"
-      style={{ background: 'var(--bg1)', border: '1px solid var(--border)' }}
-    >
-      {/* Ring + number */}
-      <div className="relative shrink-0 flex items-center justify-center">
-        <ScoreRing score={score} color={level.color} animated={animated} />
-        <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <span
-            className="display font-bold tabular-nums leading-none"
-            style={{ fontSize: '2rem', color: level.color }}
-          >
-            {score}
-          </span>
-          <span className="text-[10px] font-medium" style={{ color: 'var(--t3)' }}>/100</span>
-        </div>
-      </div>
-
-      {/* Text side */}
-      <div className="flex-1 flex flex-col gap-3">
-        <div>
-          <p className="text-[10px] uppercase tracking-[0.18em] font-semibold mb-1" style={{ color: 'var(--t3)' }}>
+    <div className="ui-card flex flex-col gap-12 p-6 sm:p-8">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div className="flex flex-col gap-2">
+          <p className="text-[11px] uppercase tracking-[0.25em] font-medium" style={{ color: 'var(--t3)' }}>
             Fundability Score
           </p>
-          <p
-            className="display text-2xl font-bold italic"
-            style={{ color: level.color }}
-          >
+          <div className="display flex items-baseline gap-4">
+            <span className="text-7xl font-light tracking-tighter" style={{ color: 'var(--t1)' }}>
+              {score}
+            </span>
+            <span className="text-xl font-light" style={{ color: 'var(--t3)' }}>
+              / 100
+            </span>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="display text-3xl font-medium" style={{ color: level.color }}>
             {level.label}
           </p>
         </div>
+      </div>
 
-        {/* Bar */}
-        <div>
+      <div className="flex flex-col gap-4">
+        {/* Soft Modern Bar */}
+        <div className="h-2 w-full rounded-full overflow-hidden" style={{ background: 'var(--bg3)' }}>
           <div
-            className="relative h-2 rounded-full overflow-hidden"
-            style={{ background: 'var(--bg3)' }}
-          >
-            <div
-              className="absolute inset-y-0 left-0 rounded-full transition-all duration-1000 ease-out"
-              style={{
-                width: animated ? `${score}%` : '0%',
-                background: 'linear-gradient(to right, #d03030 0%, #d46030 30%, #c49030 55%, #b0a030 75%, #30a070 100%)',
-              }}
-            />
-          </div>
+            className="h-full rounded-full transition-all duration-1000 ease-out"
+            style={{
+              width: animated ? `${score}%` : '0%',
+              background: 'var(--t1)',
+            }}
+          />
         </div>
 
         {/* Breakdown */}
-        <div
-          className="flex gap-5 text-xs pt-2 flex-wrap"
-          style={{ borderTop: '1px solid var(--border)', color: 'var(--t3)' }}
-        >
-          <span><span className="font-bold" style={{ color: '#d03030' }}>{fatal}</span> fatal ×15</span>
-          <span><span className="font-bold" style={{ color: 'var(--amber)' }}>{major}</span> major ×6</span>
-          <span><span className="font-bold" style={{ color: 'var(--sky)' }}>{minor}</span> minor ×2</span>
-          <span className="ms-auto font-mono">100 − {fatal * 15 + major * 6 + minor * 2} = {score}</span>
+        <div className="flex gap-6 sm:gap-8 text-[10px] sm:text-xs font-mono tracking-widest uppercase pt-2" style={{ color: 'var(--t3)' }}>
+          <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full" style={{ background: 'var(--cr)' }} /> {fatal} fatal</span>
+          <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full" style={{ background: 'var(--t1)' }} /> {major} major</span>
+          <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full" style={{ background: 'var(--t2)' }} /> {minor} minor</span>
+          <span className="ms-auto">100 − {fatal * 15 + major * 6 + minor * 2} = {score}</span>
         </div>
       </div>
     </div>

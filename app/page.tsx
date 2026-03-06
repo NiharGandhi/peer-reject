@@ -1,19 +1,20 @@
 'use client';
 
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import UploadZone from '@/components/UploadZone';
+import UploadZone, { UploadZoneHandle } from '@/components/UploadZone';
 import LanguageToggle from '@/components/LanguageToggle';
 import ThemeToggle from '@/components/ThemeToggle';
-import HowItWorks from '@/components/HowItWorks';
-import { useLang } from '@/contexts/LanguageContext';
-import { SAMPLE_PROPOSAL } from '@/lib/sampleProposal';
+import WhySection from '@/components/WhySection';
+import AgentsSection from '@/components/AgentsSection';
+import FeaturesSection from '@/components/FeaturesSection';
+import AboutSection from '@/components/AboutSection';
 
 export default function HomePage() {
   const router = useRouter();
-  const { t } = useLang();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const uploadRef = useRef<UploadZoneHandle>(null);
 
   const startReview = (text: string) => {
     sessionStorage.setItem('proposalText', text);
@@ -37,150 +38,123 @@ export default function HomePage() {
     }
   };
 
-  const reviewers = [
-    {
-      initials: 'SC',
-      name: t('personas.chen'),
-      role: t('personas.chen.role'),
-      color: 'var(--violet)',
-      colorLo: 'rgba(124,92,191,0.12)',
-    },
-    {
-      initials: 'JH',
-      name: t('personas.harrington'),
-      role: t('personas.harrington.role'),
-      color: 'var(--amber)',
-      colorLo: 'rgba(192,128,48,0.12)',
-    },
-    {
-      initials: 'AM',
-      name: t('personas.almansouri'),
-      role: t('personas.almansouri.role'),
-      color: 'var(--sky)',
-      colorLo: 'var(--sky-lo)',
-    },
-  ];
-
   return (
-    <main className="min-h-screen bg-[var(--bg)] bg-tribunal flex flex-col">
+    <main className="min-h-screen bg-(--bg) flex flex-col overflow-hidden">
 
-      {/* ── Nav ── */}
-      <nav
-        className="flex items-center justify-between px-6 sm:px-8 py-4 shrink-0"
-        style={{ borderBottom: '1px solid var(--border)' }}
-      >
-        <div className="display flex items-baseline gap-1 select-none">
-          <span className="text-xl font-light tracking-[0.18em] uppercase" style={{ color: 'var(--t2)' }}>Peer</span>
-          <span className="text-xl font-bold tracking-[0.18em] uppercase" style={{ color: 'var(--cr)' }}>Reject</span>
+      {/* Nav */}
+      <nav className="flex items-center justify-between px-6 sm:px-12 py-6 shrink-0 relative z-10">
+        <div className="flex items-baseline gap-1 select-none">
+          <span className="text-lg font-normal tracking-[0.2em] uppercase" style={{ color: 'var(--t1)' }}>Peer</span>
+          <span className="text-lg font-light tracking-[0.2em] uppercase" style={{ color: 'var(--t3)' }}>Reject</span>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="text-xs hidden sm:block" style={{ color: 'var(--t3)' }}>K2 Think V2</span>
-          <div style={{ width: 1, height: 16, background: 'var(--border-hi)' }} className="hidden sm:block" />
+        <div className="flex items-center gap-5">
+          <span className="text-[10px] uppercase tracking-widest hidden sm:block font-medium" style={{ color: 'var(--t3)' }}>K2 Think V2</span>
           <ThemeToggle />
           <LanguageToggle />
         </div>
       </nav>
 
-      {/* ── Hero ── */}
-      <section className="flex-1 flex flex-col items-center px-6 sm:px-10 pt-16 pb-12 gap-10 max-w-4xl mx-auto w-full">
+      {/* Ambient glow — sits behind content */}
+      <div className="pointer-events-none fixed inset-0 z-0">
+        <div className="absolute top-[-10%] left-[30%] w-[700px] h-[700px] rounded-full opacity-[0.07] blur-[140px]"
+          style={{ backgroundColor: 'var(--t1)' }} />
+        <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] rounded-full opacity-[0.04] blur-[120px]"
+          style={{ backgroundColor: 'var(--cr)' }} />
+      </div>
 
-        {/* Live badge */}
-        <div
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-medium tracking-wide animate-fade-in"
-          style={{ background: 'var(--cr-lo)', border: '1px solid rgba(192,48,48,0.25)', color: 'var(--cr-hi)' }}
-        >
-          <span className="w-1.5 h-1.5 rounded-full animate-[pulseDot_1.8s_ease-in-out_infinite]" style={{ background: 'var(--cr-hi)' }} />
-          Live · K2 Think V2 · 3 Adversarial Reviewers
-        </div>
+      {/* ── Main hero ─────────────────────────────────── */}
+      <section className="relative z-10 flex-1 flex flex-col justify-center px-6 sm:px-12 py-12 sm:py-20">
 
-        {/* Headline */}
-        <div className="display text-center flex flex-col gap-1 animate-fade-slide" style={{ animationDelay: '80ms', animationFillMode: 'both' }}>
-          <h1
-            className="leading-[1.05] font-light"
-            style={{ fontSize: 'clamp(2.8rem, 8vw, 5.5rem)', color: 'var(--t1)', letterSpacing: '-0.01em' }}
-          >
-            Your proposal
-          </h1>
-          <h1
-            className="leading-[1.05] font-bold italic"
-            style={{ fontSize: 'clamp(2.8rem, 8vw, 5.5rem)', color: 'var(--cr)', letterSpacing: '-0.01em' }}
-          >
-            will be rejected.
-          </h1>
-          <p
-            className="mt-4 text-base sm:text-lg font-light"
-            style={{ fontFamily: 'var(--font-display)', color: 'var(--t2)', fontStyle: 'italic' }}
-          >
-            Find out exactly why — before the committee does.
-          </p>
-        </div>
+        {/* Two-column split */}
+        <div className="max-w-7xl mx-auto w-full grid lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
-        {/* Reviewer chips */}
-        <div
-          className="flex gap-3 flex-wrap justify-center animate-fade-slide"
-          style={{ animationDelay: '160ms', animationFillMode: 'both' }}
-        >
-          {reviewers.map((r) => (
-            <div
-              key={r.name}
-              className="flex items-center gap-3 px-4 py-2.5 rounded-xl text-sm"
-              style={{
-                background: r.colorLo,
-                border: `1px solid ${r.color}30`,
-                borderLeft: `3px solid ${r.color}`,
-              }}
-            >
-              <div
-                className="display w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
-                style={{ background: r.color + '25', color: r.color, border: `1px solid ${r.color}40` }}
+          {/* Left: copy */}
+          <div className="flex flex-col gap-8">
+
+            <div className="inline-flex items-center gap-2 self-start text-[10px] font-medium tracking-[0.25em] uppercase py-1.5 px-4 rounded-full"
+              style={{ color: 'var(--t3)', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.03)' }}>
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shrink-0" />
+              Live AI Review Simulator
+            </div>
+
+            <h1 className="display font-bold leading-[1.08]"
+              style={{ fontSize: 'clamp(2.8rem, 6vw, 5rem)', color: 'var(--t1)' }}>
+              Get a{' '}
+              <span className="gradient-text">hostile</span>
+              {' '}review.<br />
+              Before they do.
+            </h1>
+
+            <p className="text-base sm:text-lg font-light leading-relaxed max-w-md"
+              style={{ color: 'var(--t2)' }}>
+              Upload your proposal. A panel of adversarial AI reviewers will tear apart your methodology, budget, and novelty — then hand you the fixes.
+            </p>
+
+            <div className="flex items-center gap-4">
+              <button
+                type="button"
+                onClick={() => uploadRef.current?.open()}
+                className="premium-glow inline-flex items-center gap-2 px-7 py-3.5 text-xs tracking-widest uppercase font-bold transition-all hover:scale-105 active:scale-95"
+                style={{ background: 'var(--t1)', color: 'var(--bg)', borderRadius: 'var(--radius-full)' }}
               >
-                {r.initials}
-              </div>
-              <div>
-                <p className="font-semibold text-xs leading-tight" style={{ color: 'var(--t1)' }}>{r.name}</p>
-                <p className="text-[11px] leading-tight" style={{ color: 'var(--t3)' }}>{r.role}</p>
+                Try &rarr;
+              </button>
+              <span className="text-xs font-light" style={{ color: 'var(--t3)' }}>
+                PDF · up to 10 MB
+              </span>
+            </div>
+
+            {/* Stat row */}
+            <div className="flex items-center gap-6 pt-4 border-t border-[var(--border)] flex-wrap">
+              {[
+                { value: '~120s', label: 'review time' },
+                { value: '3–7', label: 'parallel agents' },
+                { value: '4', label: 'report sections' },
+              ].map((s) => (
+                <div key={s.label} className="flex flex-col gap-0.5">
+                  <span className="font-mono text-lg font-medium" style={{ color: 'var(--t1)' }}>{s.value}</span>
+                  <span className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--t3)' }}>{s.label}</span>
+                </div>
+              ))}
+            </div>
+
+          </div>
+
+          {/* Right: upload card */}
+          <div className="flex flex-col gap-3">
+            <div className="ui-card p-2 shadow-2xl" style={{ background: 'var(--bg1)' }}>
+              <div className="rounded-[calc(var(--radius-card)-6px)] overflow-hidden"
+                style={{ border: '1px dashed var(--border)', background: 'rgba(0,0,0,0.25)' }}>
+                <UploadZone
+                  ref={uploadRef}
+                  onFile={handleFile}
+                  loading={loading}
+                />
               </div>
             </div>
-          ))}
-        </div>
 
-        {/* Upload zone */}
-        <div
-          className="w-full animate-fade-slide"
-          style={{ animationDelay: '240ms', animationFillMode: 'both' }}
-        >
-          <UploadZone onFile={handleFile} onSample={() => startReview(SAMPLE_PROPOSAL)} loading={loading} />
-        </div>
+            {error && (
+              <p className="text-xs px-4 py-3 font-medium rounded"
+                style={{ background: 'rgba(239,68,68,0.08)', border: '1px solid rgba(239,68,68,0.2)', color: 'var(--cr)' }}>
+                {error}
+              </p>
+            )}
 
-        {/* Status */}
-        {loading && (
-          <div className="flex items-center gap-2 text-sm animate-fade-in" style={{ color: 'var(--t2)' }}>
-            <span
-              className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin shrink-0"
-              style={{ borderColor: 'var(--sky)', borderTopColor: 'transparent' }}
-            />
-            {t('upload.parsing')}
+            {/* Small trust line */}
+            <p className="text-[10px] font-mono text-center tracking-widest uppercase" style={{ color: 'var(--t3)' }}>
+              Powered by K2 Think V2 · MBZUAI / IFM
+            </p>
           </div>
-        )}
-        {error && (
-          <p
-            className="text-sm px-4 py-2 rounded-lg max-w-sm text-center animate-fade-in"
-            style={{ color: 'var(--cr-hi)', background: 'var(--cr-lo)', border: '1px solid rgba(192,48,48,0.25)' }}
-          >
-            {error}
-          </p>
-        )}
 
-        {/* How it works */}
-        <div className="animate-fade-slide w-full" style={{ animationDelay: '320ms', animationFillMode: 'both' }}>
-          <HowItWorks />
         </div>
+
       </section>
 
-      {/* Footer */}
-      <footer className="text-center py-5" style={{ borderTop: '1px solid var(--border)', color: 'var(--t3)' }}>
-        <p className="text-xs tracking-wide">Powered by K2 Think V2 · MBZUAI / IFM</p>
-      </footer>
+      <WhySection />
+      <AgentsSection />
+      <FeaturesSection />
+      <AboutSection />
+
     </main>
   );
 }

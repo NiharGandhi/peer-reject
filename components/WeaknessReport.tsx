@@ -1,6 +1,6 @@
 'use client';
 
-import { useLang } from '@/contexts/LanguageContext';
+import { renderInline } from '@/lib/renderInline';
 
 type Severity = 'fatal' | 'major' | 'minor';
 
@@ -33,110 +33,35 @@ function parseWeaknesses(text: string): Weakness[] {
 }
 
 const SEV_CONFIG = {
-  fatal: {
-    label: 'Fatal',
-    accent: 'var(--cr)',
-    accentLo: 'var(--cr-lo)',
-    accentBorder: 'rgba(192,48,48,0.25)',
-    textColor: 'var(--cr-hi)',
-  },
-  major: {
-    label: 'Major',
-    accent: 'var(--amber)',
-    accentLo: 'var(--gold-lo)',
-    accentBorder: 'rgba(192,128,48,0.25)',
-    textColor: 'var(--gold)',
-  },
-  minor: {
-    label: 'Minor',
-    accent: 'var(--sky)',
-    accentLo: 'var(--sky-lo)',
-    accentBorder: 'rgba(56,130,200,0.20)',
-    textColor: 'var(--sky)',
-  },
+  fatal: { label: 'Fatal', color: 'var(--cr)' },
+  major: { label: 'Major', color: 'var(--t1)' },
+  minor: { label: 'Minor', color: 'var(--t3)' },
 };
 
 export default function WeaknessReport({ text }: { text: string }) {
-  const { t } = useLang();
   const weaknesses = parseWeaknesses(text);
-
-  const counts = {
-    fatal: weaknesses.filter((w) => w.severity === 'fatal').length,
-    major: weaknesses.filter((w) => w.severity === 'major').length,
-    minor: weaknesses.filter((w) => w.severity === 'minor').length,
-  };
 
   return (
     <section className="flex flex-col gap-4">
-      {/* Header + badges */}
-      <div className="flex items-center gap-3 flex-wrap">
-        <h2 className="display text-base font-semibold" style={{ color: 'var(--t1)' }}>
-          {t('results.weaknesses')}
-        </h2>
-        <div className="flex items-center gap-2 ms-auto flex-wrap">
-          {counts.fatal > 0 && (
-            <span
-              className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full"
-              style={{ background: 'var(--cr-lo)', color: 'var(--cr-hi)', border: '1px solid rgba(192,48,48,0.25)' }}
-            >
-              {counts.fatal} {t('results.fatal')}
-            </span>
-          )}
-          {counts.major > 0 && (
-            <span
-              className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full"
-              style={{ background: 'var(--gold-lo)', color: 'var(--gold)', border: '1px solid rgba(184,149,64,0.25)' }}
-            >
-              {counts.major} {t('results.major')}
-            </span>
-          )}
-          {counts.minor > 0 && (
-            <span
-              className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full"
-              style={{ background: 'var(--sky-lo)', color: 'var(--sky)', border: '1px solid rgba(56,130,200,0.25)' }}
-            >
-              {counts.minor} {t('results.minor')}
-            </span>
-          )}
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-2">
         {weaknesses.length === 0 && (
-          <p className="text-sm italic" style={{ color: 'var(--t3)' }}>No weaknesses parsed.</p>
+          <p className="text-sm font-light italic py-6" style={{ color: 'var(--t3)' }}>No weaknesses parsed.</p>
         )}
         {weaknesses.map((w, i) => {
           const cfg = SEV_CONFIG[w.severity];
           return (
-            <div
-              key={i}
-              className="rounded-xl px-4 py-3 flex gap-3 items-start"
-              style={{
-                background: cfg.accentLo,
-                border: `1px solid ${cfg.accentBorder}`,
-                borderLeft: `3px solid ${cfg.accent}`,
-              }}
-            >
-              <span
-                className="shrink-0 text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded mt-0.5"
-                style={{
-                  background: cfg.accent + '20',
-                  color: cfg.textColor,
-                  border: `1px solid ${cfg.accent}35`,
-                }}
-              >
+            <div key={i} className="ui-card p-6 sm:p-8 flex flex-col md:flex-row gap-6 md:gap-8 items-start">
+              <span className="shrink-0 px-3 py-1 rounded-[var(--radius-full)] text-[10px] font-mono uppercase tracking-widest font-medium" style={{ color: cfg.color, border: `1px solid ${cfg.color}33`, backgroundColor: `${cfg.color}11` }}>
                 {cfg.label}
               </span>
-              <div className="text-sm min-w-0">
-                <span className="font-semibold" style={{ color: 'var(--t1)' }}>{w.title}</span>
+              <div className="flex-1 flex flex-col gap-3">
+                <span className="text-lg font-normal tracking-wide" style={{ color: 'var(--t1)' }}>{w.title}</span>
                 {w.explanation && (
-                  <span className="leading-relaxed" style={{ color: 'var(--t2)' }}> — {w.explanation}</span>
+                  <span className="text-sm font-light leading-relaxed max-w-3xl" style={{ color: 'var(--t2)' }}>{renderInline(w.explanation)}</span>
                 )}
               </div>
             </div>
           );
         })}
-      </div>
     </section>
   );
 }

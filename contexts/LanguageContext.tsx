@@ -21,15 +21,24 @@ interface LangContextValue {
 
 const LangContext = createContext<LangContextValue>({
   lang: 'en',
-  toggleLang: () => {},
+  toggleLang: () => { },
   t: (key) => en[key],
   theme: 'dark',
-  toggleTheme: () => {},
+  toggleTheme: () => { },
 });
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLang] = useState<Lang>('en');
   const [theme, setTheme] = useState<Theme>('dark');
+
+  const applyLang = (l: Lang) => {
+    document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
+    document.documentElement.lang = l;
+  };
+
+  const applyTheme = (t: Theme) => {
+    document.documentElement.setAttribute('data-theme', t);
+  };
 
   useEffect(() => {
     const storedLang = (localStorage.getItem('lang') as Lang) ?? 'en';
@@ -40,14 +49,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     setTheme(storedTheme);
   }, []);
 
-  const applyLang = (l: Lang) => {
-    document.documentElement.dir = l === 'ar' ? 'rtl' : 'ltr';
-    document.documentElement.lang = l;
-  };
 
-  const applyTheme = (t: Theme) => {
-    document.documentElement.setAttribute('data-theme', t);
-  };
 
   const toggleLang = () => {
     const next: Lang = lang === 'en' ? 'ar' : 'en';

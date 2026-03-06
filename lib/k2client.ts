@@ -6,11 +6,13 @@ export interface K2Message {
   content: string;
 }
 
-export async function streamK2(messages: K2Message[]): Promise<ReadableStream<Uint8Array>> {
+export async function streamK2(messages: K2Message[], isAgentic: boolean = false): Promise<ReadableStream<Uint8Array>> {
   const apiKey = process.env.K2_API_KEY;
   if (!apiKey) throw new Error('K2_API_KEY is not set');
 
-  const response = await fetch(K2_BASE_URL, {
+  const baseUrl = isAgentic ? 'https://build-api.k2think.ai/v1/chat/completions' : K2_BASE_URL;
+
+  const response = await fetch(baseUrl, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${apiKey}`,

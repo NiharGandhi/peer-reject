@@ -8,16 +8,21 @@ export default function LanguageToggle() {
   return (
     <button
       onClick={toggleLang}
-      className="text-xs font-semibold px-3 py-1.5 rounded-lg tracking-wide transition-all duration-200"
+      className="text-[10px] font-medium px-3 py-1.5 rounded-full tracking-widest uppercase transition-all duration-300 glass-panel"
       style={{
-        background: 'var(--bg2)',
-        border: '1px solid var(--border-hi)',
-        color: 'var(--t2)',
+        color: 'var(--t1)',
+        border: '1px solid var(--border)',
       }}
-      onMouseEnter={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--t1)'; }}
-      onMouseLeave={(e) => { (e.currentTarget as HTMLButtonElement).style.color = 'var(--t2)'; }}
+      onMouseEnter={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.background = 'var(--bg2)';
+        (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border-hi)';
+      }}
+      onMouseLeave={(e) => {
+        (e.currentTarget as HTMLButtonElement).style.background = '';
+        (e.currentTarget as HTMLButtonElement).style.borderColor = 'var(--border)';
+      }}
     >
-      {lang === 'en' ? 'العربية' : 'English'}
+      {lang === 'en' ? 'العربية' : 'EN'}
     </button>
   );
 }
