@@ -2,13 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export const runtime = 'nodejs';
 
-// pdf-parse v2 depends on `canvas` which references DOMMatrix at module load.
-// Node.js serverless environments don't expose it as a global — stub it out.
-if (typeof globalThis.DOMMatrix === 'undefined') {
-  // @ts-expect-error minimal stub; canvas only needs the constructor to not throw
-  globalThis.DOMMatrix = class DOMMatrix {};
-}
-
 export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
@@ -28,12 +21,9 @@ export async function POST(req: NextRequest) {
 
     const buffer = Buffer.from(await file.arrayBuffer());
 
-    // pdf-parse v2 exports a named class `PDFParse`, not a default function.
-    // Instantiate with { data: buffer }, then call getText() to extract text.
-    const { PDFParse } = await import('pdf-parse');
-    const parser = new PDFParse({ data: buffer });
-    const result = await parser.getText();
-    const data = { text: result.text as string };
+    // pdf-parse v1 — default export, accepts a Buffer directly
+    const pdfParse = (await import('pdf-parse')).default;
+    const data = await pdfParse(buffer);
 
     if (!data.text || data.text.trim().length < 100) {
       return NextResponse.json(
