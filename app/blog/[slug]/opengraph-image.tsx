@@ -1,13 +1,8 @@
 import { ImageResponse } from 'next/og';
-import { getAllPosts, getPost } from '@/lib/blog';
+import { getPost } from '@/lib/blog';
 
-export const runtime = 'edge';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
-
-export async function generateStaticParams() {
-  return getAllPosts().map((p) => ({ slug: p.slug }));
-}
 
 export default async function OgImage({
   params,
