@@ -111,11 +111,15 @@ export default function BlogListPage() {
       <section className="relative z-10 max-w-6xl mx-auto px-6 sm:px-12 pb-24">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px"
           style={{ background: 'var(--border)' }}>
-          {posts.map((post) => (
+          {posts.map((post, i) => {
+            const tagColors = ['var(--gold)', 'var(--teal)', 'var(--cr)'];
+            const tagColor = tagColors[i % tagColors.length];
+            return (
             <Link
               key={post.slug}
               href={`/blog/${post.slug}`}
               className="blog-card group flex flex-col gap-4 p-7"
+              style={{ background: 'var(--bg1)' }}
             >
               {/* Tags */}
               <div className="flex flex-wrap gap-2">
@@ -124,7 +128,7 @@ export default function BlogListPage() {
                     key={tag}
                     className="text-[9px] font-mono uppercase tracking-[0.2em] px-2 py-0.5 rounded"
                     style={{
-                      color: 'var(--t3)',
+                      color: tagColor,
                       background: 'var(--bg3)',
                     }}
                   >
@@ -156,7 +160,8 @@ export default function BlogListPage() {
                 </span>
               </div>
             </Link>
-          ))}
+          );
+          })}
         </div>
       </section>
 

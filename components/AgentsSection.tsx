@@ -1,5 +1,20 @@
 'use client';
 
+import { useLang } from '@/contexts/LanguageContext';
+
+/* Darker shades for better visibility in both themes */
+const AGENT_ACCENTS = [
+  '#0891b2', // 01 cyan-600
+  '#059669', // 02 emerald-600
+  '#7c3aed', // 03 violet-600
+  '#d97706', // 04 amber-600
+  '#db2777', // 05 pink-600
+  '#2563eb', // 06 blue-600
+  '#4f46e5', // 07 indigo-600
+  '#475569', // 08 slate-600
+  '#b8860b', // 09 dark goldenrod
+];
+
 const AGENTS: {
   num: string;
   name: string;
@@ -122,8 +137,13 @@ const AGENTS: {
 ];
 
 export default function AgentsSection() {
+  const { theme } = useLang();
+  const isLight = theme === 'light';
+  const gradStart = isLight ? '15' : '08';
+  const gradHover = isLight ? '22' : '12';
+
   return (
-    <section className="px-6 sm:px-12 py-24 sm:py-32 border-t border-[var(--border)] relative z-10">
+    <section className="agents-section px-6 sm:px-12 py-24 sm:py-32 border-t border-[var(--border)] relative z-10">
       <div className="max-w-7xl mx-auto">
 
         {/* Header */}
@@ -131,7 +151,7 @@ export default function AgentsSection() {
           <p className="text-[10px] font-mono uppercase tracking-[0.3em]" style={{ color: 'var(--t3)' }}>
             The Panel
           </p>
-          <h2 className="display text-3xl sm:text-4xl font-bold leading-tight" style={{ color: 'var(--t1)' }}>
+          <h2 className="display text-4xl sm:text-5xl font-bold leading-tight" style={{ color: 'var(--t1)' }}>
             Seven agents.<br />
             <span className="gradient-text">Every angle covered.</span>
           </h2>
@@ -141,63 +161,85 @@ export default function AgentsSection() {
         </div>
 
         {/* Agent grid */}
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px" style={{ background: 'var(--border)' }}>
-          {AGENTS.map((agent) => (
-            <div
-              key={agent.num}
-              className="flex flex-col gap-6 p-8 transition-colors duration-200 relative"
-              style={{
-                background: 'var(--bg)',
-                opacity: agent.comingSoon ? 0.55 : 1,
-              }}
-              onMouseEnter={(e) => { if (!agent.comingSoon) e.currentTarget.style.background = 'var(--bg1)'; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = 'var(--bg)'; }}
-            >
-              {/* Number + badges */}
-              <div className="flex items-center justify-between gap-3">
-                <span className="font-mono text-[10px] tracking-widest" style={{ color: 'var(--t3)' }}>
-                  {agent.num}
-                </span>
-                <div className="flex flex-wrap gap-1 justify-end">
-                  {agent.comingSoon ? (
-                    <span className="text-[8px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded"
-                      style={{ color: 'var(--t3)', border: '1px solid var(--border)', background: 'var(--bg2)' }}>
-                      Coming Soon
-                    </span>
-                  ) : (
-                    agent.assignedTo.map((type) => (
-                      <span key={type}
-                        className="text-[8px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded"
+        <div className="agents-grid grid sm:grid-cols-2 lg:grid-cols-3 gap-px" style={{ background: 'var(--border)' }}>
+          {AGENTS.map((agent, idx) => {
+            const accent = AGENT_ACCENTS[idx] ?? '#71717a';
+            return (
+              <div
+                key={agent.num}
+                className="agent-card flex flex-col gap-6 p-8 transition-all duration-300 relative"
+                style={{
+                  background: `linear-gradient(to bottom, ${accent}${gradStart} 0%, var(--bg) 40%)`,
+                  opacity: agent.comingSoon ? 0.55 : 1,
+                  borderBottom: `2px solid ${accent}30`,
+                }}
+                onMouseEnter={(e) => {
+                  if (!agent.comingSoon) {
+                    e.currentTarget.style.background = `linear-gradient(to bottom, ${accent}${gradHover} 0%, var(--bg1) 40%)`;
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = `linear-gradient(to bottom, ${accent}${gradStart} 0%, var(--bg) 40%)`;
+                }}
+              >
+                {/* Number + badges */}
+                <div className="flex items-center justify-between gap-3">
+                  <span
+                    className="font-mono text-[10px] tracking-widest font-bold tabular-nums px-2 py-1 rounded"
+                    style={{ color: accent, background: `${accent}18` }}
+                  >
+                    {agent.num}
+                  </span>
+                  <div className="flex flex-wrap gap-1 justify-end">
+                    {agent.comingSoon ? (
+                      <span className="coming-soon-badge text-[8px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded"
                         style={{ color: 'var(--t3)', border: '1px solid var(--border)', background: 'var(--bg2)' }}>
-                        {type}
+                        Coming Soon
                       </span>
-                    ))
-                  )}
+                    ) : (
+                      agent.assignedTo.map((type) => (
+                        <span
+                          key={type}
+                          className="text-[8px] font-mono uppercase tracking-wider px-1.5 py-0.5 rounded"
+                          style={{
+                            color: accent,
+                            border: `1px solid ${accent}40`,
+                            background: `${accent}15`,
+                          }}
+                        >
+                          {type}
+                        </span>
+                      ))
+                    )}
+                  </div>
                 </div>
-              </div>
 
-              {/* Name + role */}
-              <div className="flex flex-col gap-1">
-                <h3 className="display text-lg font-semibold leading-snug" style={{ color: 'var(--t1)' }}>
-                  {agent.name}
-                </h3>
-                <p className="text-[10px] font-mono uppercase tracking-widest" style={{ color: 'var(--t3)' }}>
-                  {agent.role}
-                </p>
-              </div>
+                {/* Name + role */}
+                <div className="flex flex-col gap-1 relative">
+                  <h3 className="display text-lg font-semibold leading-snug" style={{ color: 'var(--t1)' }}>
+                    {agent.name}
+                  </h3>
+                  <p className="agent-role text-[10px] font-mono uppercase tracking-widest" style={{ color: 'var(--t3)' }}>
+                    {agent.role}
+                  </p>
+                </div>
 
-              {/* Focus areas */}
-              <ul className="flex flex-col gap-2 pt-4 border-t border-[var(--border)]">
-                {agent.focus.map((item) => (
-                  <li key={item} className="flex items-start gap-2.5 text-sm font-light leading-snug"
-                    style={{ color: 'var(--t2)' }}>
-                    <span className="mt-[5px] w-1 h-1 rounded-full shrink-0" style={{ background: 'var(--t3)' }} />
-                    {item}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          ))}
+                {/* Focus areas */}
+                <ul className="agent-focus-border flex flex-col gap-2 pt-4 border-t border-[var(--border)] relative">
+                  {agent.focus.map((item) => (
+                    <li key={item} className="agent-focus flex items-start gap-2.5 text-sm font-light leading-snug"
+                      style={{ color: 'var(--t2)', fontFamily: 'var(--font-ui)' }}>
+                      <span
+                        className="mt-[5px] w-1.5 h-1.5 rounded-full shrink-0"
+                        style={{ background: accent }}
+                      />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
         </div>
 
       </div>

@@ -40,10 +40,16 @@
   /* Keep red for critical errors only */
   --cr-hi: #dc2626;
   --cr-lo: rgba(239, 68, 68, 0.10);
+  --cr-rgb: 239, 68, 68;
+
+  --teal: #0d9488;
+  --teal-rgb: 13, 148, 136;
 
   --gold: #d4af37;
+  --gold-rgb: 212, 175, 55;
   /* Premium subtle gold accent for CTAs */
   --gold-lo: rgba(212, 175, 55, 0.1);
+  --gold-border: rgba(212, 175, 55, 0.3);
 
   --border: rgba(255, 255, 255, 0.08);
   /* Soft translucent borders */
@@ -105,9 +111,15 @@
   --cr: #dc2626;
   --cr-hi: #b91c1c;
   --cr-lo: rgba(220, 38, 38, 0.08);
+  --cr-rgb: 220, 38, 38;
 
-  --gold: #b45309;
-  --gold-lo: rgba(180, 83, 9, 0.08);
+  --teal: #0f766e;
+  --teal-rgb: 15, 118, 110;
+
+  --gold: #b8860b;
+  --gold-rgb: 184, 134, 11;
+  --gold-lo: rgba(184, 134, 11, 0.08);
+  --gold-border: rgba(184, 134, 11, 0.25);
 
   --border: #e4e4e7;
   --border-hi: #d4d4d8;
@@ -120,6 +132,25 @@
   --shadow-card: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.10), 0 2px 6px rgba(0, 0, 0, 0.06);
   --shadow-glow: 0 0 0 1px rgba(0, 0, 0, 0.04);
+}
+
+/* ── Agents section: reduce grey in light mode ───────────────────────────────── */
+[data-theme="light"] .agents-section .agents-grid {
+  background: rgba(0, 0, 0, 0.05) !important;
+}
+[data-theme="light"] .agents-section .agent-card .agent-role {
+  color: #374151 !important;
+}
+[data-theme="light"] .agents-section .agent-card .agent-focus {
+  color: #4b5563 !important;
+}
+[data-theme="light"] .agents-section .agent-card .agent-focus-border {
+  border-color: rgba(0, 0, 0, 0.06) !important;
+}
+[data-theme="light"] .agents-section .agent-card .coming-soon-badge {
+  color: #6b7280 !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  background: #f9fafb !important;
 }
 
 @theme inline {
@@ -135,8 +166,7 @@
 }
 
 body {
-  background-image: var(--bg-gradient);
-  background-color: var(--bg);
+  background-color: #06040f;
   color: var(--t1);
   font-family: var(--font-ui), Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -150,16 +180,31 @@ body {
   /* Slightly looser than before for elegance */
 }
 
+/* ── Landing page: serif for headings only, body stays readable ─────────────── */
+.landing-page .display {
+  font-family: var(--font-playfair), Georgia, serif;
+}
+
+/* ── Review page: serif for header ──────────────────────────────────────────── */
+.review-page h1.display {
+  font-family: var(--font-playfair), Georgia, serif;
+}
+
+/* ── Results page: serif for headings ───────────────────────────────────────── */
+.results-page h2.display {
+  font-family: var(--font-playfair), Georgia, serif;
+}
+
 /* ── Glowing Accents ──────────────────────────────────────────────────────── */
 .gradient-text {
-  background: linear-gradient(135deg, #ffffff, #a1a1aa);
+  background: linear-gradient(135deg, #e8c547, #d4af37, #b8962e);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 [data-theme="light"] .gradient-text {
-  background: linear-gradient(135deg, #09090b, #52525b);
+  background: linear-gradient(135deg, #c9a227, #b8860b, #996b00);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
@@ -173,7 +218,7 @@ body {
   content: '';
   position: absolute;
   inset: -1px;
-  background: linear-gradient(45deg, rgba(255, 255, 255, 0.1), transparent, rgba(255, 255, 255, 0.05));
+  background: linear-gradient(45deg, rgba(212, 175, 55, 0.4), transparent, rgba(212, 175, 55, 0.15));
   border-radius: inherit;
   z-index: -1;
   opacity: 0;
@@ -185,12 +230,11 @@ body {
 }
 
 [data-theme="light"] .premium-glow::before {
-  background: linear-gradient(45deg, rgba(0, 0, 0, 0.04), transparent, rgba(0, 0, 0, 0.02));
+  background: linear-gradient(45deg, rgba(184, 134, 11, 0.2), transparent, rgba(184, 134, 11, 0.08));
 }
 
 /* ── Light mode structural overrides ──────────────────────────────────────── */
 [data-theme="light"] body {
-  background-image: none;
   background-color: var(--bg);
 }
 
@@ -199,8 +243,33 @@ body {
 }
 
 [data-theme="light"] nav {
-  background-color: var(--bg) !important;
+  background: rgba(255,253,247,0.85) !important;
+  backdrop-filter: blur(12px) !important;
   border-bottom: 1px solid var(--border) !important;
+}
+
+/* Light mode: show bowtie with soft gold on white */
+[data-theme="light"] .bowtie-bg {
+  background: #fffdf7 !important;
+}
+
+[data-theme="light"] .bowtie-bg .bowtie-overlay {
+  background: rgba(255,253,247,0.55) !important;
+}
+
+[data-theme="light"] .landing-page,
+[data-theme="light"] .review-page,
+[data-theme="light"] .results-page {
+  background-color: transparent !important;
+}
+
+[data-theme="light"] .results-page aside {
+  background: rgba(255,253,247,0.80) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+[data-theme="light"] body {
+  background-color: #fffdf7 !important;
 }
 
 [data-theme="light"] .glass-panel {

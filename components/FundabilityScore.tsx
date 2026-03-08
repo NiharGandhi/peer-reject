@@ -68,8 +68,8 @@ export default function FundabilityScore({ fatal, major, minor }: Props) {
         {/* Breakdown */}
         <div className="flex gap-6 sm:gap-8 text-[10px] sm:text-xs font-mono tracking-widest uppercase pt-2" style={{ color: 'var(--t3)' }}>
           <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full" style={{ background: 'var(--cr)' }} /> {fatal} fatal</span>
-          <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full" style={{ background: 'var(--t1)' }} /> {major} major</span>
-          <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full" style={{ background: 'var(--t2)' }} /> {minor} minor</span>
+          <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full" style={{ background: '#f97316' }} /> {major} major</span>
+          <span className="flex items-center gap-1.5"><div className="w-2 h-2 rounded-full" style={{ background: '#eab308' }} /> {minor} minor</span>
           <span className="ms-auto">100 − {fatal * 15 + major * 6 + minor * 2} = {score}</span>
         </div>
       </div>

@@ -6,7 +6,6 @@ import RejectionLetter from '@/components/RejectionLetter';
 import WeaknessReport from '@/components/WeaknessReport';
 import FixRecommendations from '@/components/FixRecommendations';
 import CopyButton from '@/components/CopyButton';
-import LanguageToggle from '@/components/LanguageToggle';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useLang } from '@/contexts/LanguageContext';
 import { renderInline } from '@/lib/renderInline';
@@ -78,6 +77,7 @@ export default function ResultsPage() {
 
   // Floating sidebar indicator
   const navItemRefs = useRef<Record<string, HTMLButtonElement | null>>({});
+  const sidebarScrollRef = useRef<HTMLDivElement>(null);
   const [indicator, setIndicator] = useState({ top: 0, height: 0 });
 
   // Scroll container ref (needed for IntersectionObserver root + scroll-end detection)
@@ -93,31 +93,82 @@ export default function ResultsPage() {
     setSections(parseSynthesis(raw));
   }, [router]);
 
+  // Update active section on scroll
   useEffect(() => {
     if (!sections) return;
-    const obs = new IntersectionObserver(
-      (entries) => {
-        if (isProgrammaticScroll.current) return;
-        const visible = entries.filter((e) => e.isIntersecting);
-        if (visible.length > 0) {
-          const topmost = visible.reduce((a, b) =>
-            a.boundingClientRect.top < b.boundingClientRect.top ? a : b
-          );
-          setActiveSection(topmost.target.id);
+
+    const ids = ['letter', 'weaknesses', 'fixes', 'abstract'] as const;
+    const triggerY = 140;
+
+    const computeActive = () => {
+      if (isProgrammaticScroll.current) return;
+      let best: string = ids[0];
+      let bestTop = -Infinity;
+      for (const id of ids) {
+        const el = refs[id].current;
+        if (!el) continue;
+        const rect = el.getBoundingClientRect();
+        if (rect.top <= triggerY && rect.bottom > 60 && rect.top > bestTop) {
+          bestTop = rect.top;
+          best = id;
         }
-      },
-      { root: scrollContainerRef.current, rootMargin: '-10% 0px -70% 0px', threshold: 0 }
-    );
-    Object.values(refs).forEach((r) => { if (r.current) obs.observe(r.current); });
-    return () => obs.disconnect();
+      }
+      setActiveSection((prev) => (prev === best ? prev : best));
+    };
+
+    const container = scrollContainerRef.current;
+    const onScroll = () => requestAnimationFrame(computeActive);
+
+    if (container) container.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('scroll', onScroll, { passive: true });
+    // Run after layout
+    const t = requestAnimationFrame(() => requestAnimationFrame(computeActive));
+
+    return () => {
+      cancelAnimationFrame(t);
+      container?.removeEventListener('scroll', onScroll);
+      window.removeEventListener('scroll', onScroll);
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sections]);
 
-  // Move indicator whenever activeSection changes
+  // Move indicator and auto-scroll sidebar whenever activeSection changes
   useLayoutEffect(() => {
     const el = navItemRefs.current[activeSection];
-    if (el) setIndicator({ top: el.offsetTop, height: el.offsetHeight });
-  }, [activeSection]);
+    const container = sidebarScrollRef.current;
+    if (el) {
+      setIndicator({ top: el.offsetTop, height: el.offsetHeight });
+      if (container) {
+        const cr = container.getBoundingClientRect();
+        const er = el.getBoundingClientRect();
+        const itemTopInScroll = container.scrollTop + (er.top - cr.top);
+        const itemH = el.offsetHeight;
+        const containerH = container.clientHeight;
+        const targetScroll = Math.max(0, itemTopInScroll - containerH / 2 + itemH / 2);
+        if (container.scrollHeight > containerH) {
+          container.scrollTo({ top: targetScroll, behavior: 'smooth' });
+        }
+      }
+    } else {
+      const t = requestAnimationFrame(() => {
+        const e = navItemRefs.current[activeSection];
+        const c = sidebarScrollRef.current;
+        if (e && c) {
+          setIndicator({ top: e.offsetTop, height: e.offsetHeight });
+          const cr = c.getBoundingClientRect();
+          const er = e.getBoundingClientRect();
+          const itemTopInScroll = c.scrollTop + (er.top - cr.top);
+          const itemH = e.offsetHeight;
+          const containerH = c.clientHeight;
+          const targetScroll = Math.max(0, itemTopInScroll - containerH / 2 + itemH / 2);
+          if (c.scrollHeight > containerH) {
+            c.scrollTo({ top: targetScroll, behavior: 'smooth' });
+          }
+        }
+      });
+      return () => cancelAnimationFrame(t);
+    }
+  }, [activeSection, sections]);
 
   const scrollTo = (id: string) => {
     setActiveSection(id);
@@ -168,14 +219,63 @@ export default function ResultsPage() {
   const totalIssues  = sections.counts.fatal + sections.counts.major + sections.counts.minor;
 
   return (
-    <main className="min-h-screen bg-(--bg) flex flex-col">
+    <main className="results-page min-h-screen flex flex-col" style={{ background: 'transparent' }}>
+
+      {/* Purple hourglass bowtie background */}
+      <div className="bowtie-bg pointer-events-none fixed inset-0 z-0 overflow-hidden" style={{ background: '#06040f' }}>
+        {/* Bowtie SVG layers */}
+        <div className="absolute inset-0 flex items-center justify-center">
+          <svg viewBox="0 0 1200 600" className="w-full h-full" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <path
+                id="bt"
+                d="M 0 300 L 0 480 C 200 480 380 340 600 300 C 820 260 1000 120 1200 120 L 1200 480 C 1000 480 820 340 600 300 C 380 260 200 120 0 120 Z"
+              />
+              <path
+                id="bt2"
+                d="M 0 300 L 0 420 C 220 420 390 330 600 300 C 810 270 980 180 1200 180 L 1200 420 C 980 420 810 330 600 300 C 390 270 220 180 0 180 Z"
+              />
+              <path
+                id="bt3"
+                d="M 0 300 L 0 360 C 240 360 400 315 600 300 C 800 285 960 240 1200 240 L 1200 360 C 960 360 800 315 600 300 C 400 285 240 240 0 240 Z"
+              />
+              <filter id="f100" x="-60%" y="-200%" width="220%" height="500%"><feGaussianBlur in="SourceGraphic" stdDeviation="60" /></filter>
+              <filter id="f35"  x="-40%" y="-150%" width="180%" height="400%"><feGaussianBlur in="SourceGraphic" stdDeviation="28" /></filter>
+              <filter id="f24"  x="-30%" y="-100%" width="160%" height="300%"><feGaussianBlur in="SourceGraphic" stdDeviation="16" /></filter>
+            </defs>
+            {/* Outermost layer — dark amber/brown gold, blur 60 */}
+            <use href="#bt"  fill="rgba(160,100,10,0.55)"  filter="url(#f100)" />
+            {/* Middle layer — rich gold, blur 28 */}
+            <use href="#bt2" fill="rgba(212,160,30,0.50)"  filter="url(#f35)"  />
+            {/* Inner layer — bright warm gold/champagne, blur 16 */}
+            <use href="#bt3" fill="rgba(245,210,100,0.45)" filter="url(#f24)"  />
+          </svg>
+        </div>
+        {/* Dark overlay for readability */}
+        <div className="bowtie-overlay absolute inset-0" style={{ background: 'rgba(0,0,0,0.65)' }} />
+        {/* Central hotspot — bright gold-white glow at waist */}
+        <div
+          className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] h-[180px] rounded-full blur-[80px]"
+          style={{ background: 'rgba(255,230,140,0.30)' }}
+        />
+        {/* Left edge ambient glow */}
+        <div
+          className="absolute left-0 top-1/2 -translate-y-1/2 w-[380px] h-[500px] rounded-full blur-[120px]"
+          style={{ background: 'rgba(180,110,20,0.28)', transform: 'translateY(-50%) translateX(-30%)' }}
+        />
+        {/* Right edge ambient glow */}
+        <div
+          className="absolute right-0 top-1/2 -translate-y-1/2 w-[380px] h-[500px] rounded-full blur-[120px]"
+          style={{ background: 'rgba(180,110,20,0.28)', transform: 'translateY(-50%) translateX(30%)' }}
+        />
+      </div>
 
       {/* ── Top nav ─────────────────────────────────────────── */}
       <nav className="sticky top-0 z-30 h-14 flex items-center justify-between px-6 sm:px-8 border-b border-[var(--border)] shrink-0 no-print"
-        style={{ background: 'var(--bg)' }}>
+        style={{ background: 'rgba(6,4,15,0.80)', backdropFilter: 'blur(12px)' }}>
         <div className="flex items-baseline gap-1 select-none">
           <span className="text-base font-normal tracking-[0.2em] uppercase" style={{ color: 'var(--t1)' }}>Peer</span>
-          <span className="text-base font-light tracking-[0.2em] uppercase" style={{ color: 'var(--t3)' }}>Reject</span>
+          <span className="text-base font-light tracking-[0.2em] uppercase" style={{ color: 'var(--gold)' }}>Reject</span>
         </div>
         <div className="flex items-center gap-5">
           <span className="hidden sm:inline text-xs font-mono px-2.5 py-1 rounded"
@@ -193,20 +293,19 @@ export default function ResultsPage() {
             New →
           </button>
           <ThemeToggle />
-          <LanguageToggle />
         </div>
       </nav>
 
       {/* ── Body: sidebar + content ──────────────────────────── */}
-      <div className="flex flex-1 min-h-0">
+      <div className="relative z-10 flex flex-1 min-h-0">
 
         {/* ── Sidebar ─────────────────────────────────────────── */}
         <aside className="hidden md:flex flex-col w-56 shrink-0 border-r border-[var(--border)] no-print"
-          style={{ background: 'var(--bg)' }}>
-          <div className="sticky top-14 h-[calc(100vh-3.5rem)] flex flex-col px-4 py-8 overflow-y-auto">
+          style={{ background: 'rgba(6,4,15,0.75)', backdropFilter: 'blur(8px)' }}>
+          <div ref={sidebarScrollRef} className="sticky top-14 h-[calc(100vh-3.5rem)] flex flex-col px-4 py-8 overflow-y-auto">
 
             <p className="text-[9px] font-mono uppercase tracking-[0.3em] px-3 mb-4"
-              style={{ color: 'var(--t3)' }}>
+              style={{ color: 'var(--teal)' }}>
               Contents
             </p>
 
@@ -214,11 +313,12 @@ export default function ResultsPage() {
               {/* Floating highlight — slides between items */}
               {indicator.height > 0 && (
                 <div
-                  className="absolute inset-x-0 rounded pointer-events-none"
+                  className="absolute inset-x-0 rounded pointer-events-none z-0"
                   style={{
                     top: indicator.top,
                     height: indicator.height,
                     background: 'var(--bg2)',
+                    borderLeft: '2px solid var(--gold)',
                     transition: 'top 260ms cubic-bezier(0.4, 0, 0.2, 1), height 260ms cubic-bezier(0.4, 0, 0.2, 1)',
                   }}
                 />
@@ -234,7 +334,7 @@ export default function ResultsPage() {
                     style={{ color: isActive ? 'var(--t1)' : 'var(--t3)' }}
                   >
                     <span className="font-mono text-[9px] tracking-widest shrink-0 w-5 transition-colors duration-200"
-                      style={{ color: isActive ? 'var(--t2)' : 'var(--t3)' }}>
+                      style={{ color: isActive ? 'var(--gold)' : 'var(--t3)' }}>
                       {item.num}
                     </span>
                     <span className="text-sm transition-all duration-200" style={{ fontWeight: isActive ? 500 : 300 }}>
@@ -261,14 +361,14 @@ export default function ResultsPage() {
               )}
               {sections.counts.major > 0 && (
                 <div className="flex items-center justify-between text-[10px] font-mono">
-                  <span style={{ color: 'var(--t2)' }}>Major</span>
-                  <span style={{ color: 'var(--t2)' }}>{sections.counts.major}</span>
+                  <span style={{ color: '#f97316' }}>Major</span>
+                  <span style={{ color: '#f97316' }}>{sections.counts.major}</span>
                 </div>
               )}
               {sections.counts.minor > 0 && (
                 <div className="flex items-center justify-between text-[10px] font-mono">
-                  <span style={{ color: 'var(--t3)' }}>Minor</span>
-                  <span style={{ color: 'var(--t3)' }}>{sections.counts.minor}</span>
+                  <span style={{ color: '#eab308' }}>Minor</span>
+                  <span style={{ color: '#eab308' }}>{sections.counts.minor}</span>
                 </div>
               )}
             </div>
@@ -292,26 +392,28 @@ export default function ResultsPage() {
 
         {/* ── Main content ─────────────────────────────────────── */}
         <div ref={scrollContainerRef} className="flex-1 overflow-y-auto">
-          <div className="max-w-2xl mx-auto px-6 sm:px-10 py-14 flex flex-col">
+          <div className="max-w-2xl mx-auto px-6 sm:px-10 py-14 flex flex-col" >
 
             {/* 01 — Decision Letter */}
             <div id="letter" ref={refs.letter} className="scroll-mt-8">
               <div className="flex items-start justify-between gap-4 mb-8">
                 <div>
-                  <p className="text-[9px] font-mono uppercase tracking-[0.3em] mb-2" style={{ color: 'var(--t3)' }}>
+                  <p className="text-[9px] font-mono uppercase tracking-[0.3em] mb-2" style={{ color: 'var(--gold)' }}>
                     01 / Decision
                   </p>
-                  <h2 className="display text-xl font-normal" style={{ color: 'var(--t1)' }}>
+                  <h2 className="display text-2xl font-normal" style={{ color: 'var(--t1)' }}>
                     Formal Rejection Letter
                   </h2>
                 </div>
                 <CopyButton text={sections.letter} label="Copy" />
               </div>
               <div className="flex items-center justify-between py-3 mb-7 border-y border-[var(--border)]">
-                <p className="text-[9px] font-mono uppercase tracking-widest" style={{ color: 'var(--t3)' }}>
-                  K2 Think V2 Review Panel · Official Decision
+                <p className="text-[9px] font-mono uppercase tracking-widest">
+                  <span style={{ color: 'var(--teal)' }}>K2 Think V2</span>
+                  <span style={{ color: 'var(--t3)' }}> Review Panel · </span>
+                  <span style={{ color: 'var(--gold)' }}>Official Decision</span>
                 </p>
-                <p className="text-[9px] font-mono uppercase tracking-widest" style={{ color: 'var(--t3)' }}>
+                <p className="text-[9px] font-mono uppercase tracking-widest" style={{ color: 'var(--cr)' }}>
                   Confidential
                 </p>
               </div>
@@ -324,17 +426,17 @@ export default function ResultsPage() {
             <div id="weaknesses" ref={refs.weaknesses} className="scroll-mt-8">
               <div className="flex items-end justify-between gap-4 mb-8 flex-wrap">
                 <div>
-                  <p className="text-[9px] font-mono uppercase tracking-[0.3em] mb-2" style={{ color: 'var(--t3)' }}>
+                  <p className="text-[9px] font-mono uppercase tracking-[0.3em] mb-2" style={{ color: 'var(--cr)' }}>
                     02 / Issues
                   </p>
-                  <h2 className="display text-xl font-normal" style={{ color: 'var(--t1)' }}>
+                  <h2 className="display text-2xl font-normal" style={{ color: 'var(--t1)' }}>
                     Identified Weaknesses
                   </h2>
                 </div>
                 <div className="flex items-center gap-4 font-mono text-[9px] uppercase tracking-widest pb-0.5">
                   {sections.counts.fatal > 0 && <span style={{ color: 'var(--cr)' }}>{sections.counts.fatal} Fatal</span>}
-                  {sections.counts.major > 0 && <span style={{ color: 'var(--t2)' }}>{sections.counts.major} Major</span>}
-                  {sections.counts.minor > 0 && <span style={{ color: 'var(--t3)' }}>{sections.counts.minor} Minor</span>}
+                  {sections.counts.major > 0 && <span style={{ color: '#f97316' }}>{sections.counts.major} Major</span>}
+                  {sections.counts.minor > 0 && <span style={{ color: '#eab308' }}>{sections.counts.minor} Minor</span>}
                 </div>
               </div>
               <WeaknessReport text={sections.weaknesses} />
@@ -346,10 +448,10 @@ export default function ResultsPage() {
             <div id="fixes" ref={refs.fixes} className="scroll-mt-8">
               <div className="flex items-start justify-between gap-4 mb-8">
                 <div>
-                  <p className="text-[9px] font-mono uppercase tracking-[0.3em] mb-2" style={{ color: 'var(--t3)' }}>
+                  <p className="text-[9px] font-mono uppercase tracking-[0.3em] mb-2" style={{ color: 'var(--teal)' }}>
                     03 / Actions
                   </p>
-                  <h2 className="display text-xl font-normal" style={{ color: 'var(--t1)' }}>
+                  <h2 className="display text-2xl font-normal" style={{ color: 'var(--t1)' }}>
                     How to Fix It
                   </h2>
                 </div>
@@ -364,10 +466,10 @@ export default function ResultsPage() {
             <div id="abstract" ref={refs.abstract} className="scroll-mt-8">
               <div className="flex items-start justify-between gap-4 mb-8">
                 <div>
-                  <p className="text-[9px] font-mono uppercase tracking-[0.3em] mb-2" style={{ color: 'var(--t3)' }}>
+                  <p className="text-[9px] font-mono uppercase tracking-[0.3em] mb-2" style={{ color: 'var(--gold)' }}>
                     04 / Revised
                   </p>
-                  <h2 className="display text-xl font-normal" style={{ color: 'var(--t1)' }}>
+                  <h2 className="display text-2xl font-normal" style={{ color: 'var(--t1)' }}>
                     Revised Abstract
                   </h2>
                 </div>
@@ -376,9 +478,9 @@ export default function ResultsPage() {
               {sections.abstract ? (
                 <div className="flex flex-col gap-5 pl-4 border-l border-[var(--border)]">
                   {sections.abstract.split(/\n{2,}/).map((p, i) => (
-                    <p key={i} className="text-base font-light leading-[1.9]" style={{ color: 'var(--t1)' }}>
+                    <div key={i} className="text-base font-light leading-[1.9]" style={{ color: 'var(--t1)' }}>
                       {renderInline(p.trim())}
-                    </p>
+                    </div>
                   ))}
                 </div>
               ) : (

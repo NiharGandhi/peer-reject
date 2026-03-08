@@ -100,8 +100,8 @@ export default function FixRecommendations({ text }: { text: string }) {
     <section className="flex flex-col gap-4">
       {fixes.map((fix) => (
         <div key={fix.number} className="ui-card flex gap-6 items-start p-6 sm:p-8">
-          <div className="shrink-0 flex items-center justify-center w-10 h-10 rounded-full font-mono text-xs tracking-widest mt-0.5"
-            style={{ background: 'var(--bg2)', color: 'var(--t2)', border: '1px solid var(--border)' }}>
+          <div className="shrink-0 flex items-center justify-center w-10 h-10 rounded-full font-mono text-xs tracking-widest mt-0.5 font-medium"
+            style={{ background: 'rgba(var(--teal-rgb), 0.12)', color: 'var(--teal)', border: '1px solid rgba(var(--teal-rgb), 0.3)' }}>
             {fix.number.toString().padStart(2, '0')}
           </div>
           <div className="flex-1 flex flex-col gap-2 min-w-0">

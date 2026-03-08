@@ -27,6 +27,17 @@ export interface AgentMeta {
   reviewHeader: string;
 }
 
+/** Accent colors for agent cards — matches landing page AgentsSection */
+export const AGENT_ACCENTS: Record<AgentId, string> = {
+  methodology: '#0891b2',
+  budget: '#059669',
+  novelty: '#7c3aed',
+  domain: '#d97706',
+  presentation: '#db2777',
+  statistics: '#2563eb',
+  survey: '#4f46e5',
+};
+
 export const AGENT_META: Record<AgentId, AgentMeta> = {
   methodology: {
     name: 'Methodology Agent',

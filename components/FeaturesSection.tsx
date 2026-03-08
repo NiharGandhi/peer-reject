@@ -68,12 +68,12 @@ export default function FeaturesSection() {
 
         {/* Header */}
         <div className="mb-16 flex flex-col gap-4 max-w-2xl">
-          <p className="text-[10px] font-mono uppercase tracking-[0.3em]" style={{ color: 'var(--t3)' }}>
+          <p className="text-[10px] font-mono uppercase tracking-[0.3em]" style={{ color: 'var(--teal)' }}>
             Capabilities
           </p>
-          <h2 className="display text-3xl sm:text-4xl font-bold leading-tight" style={{ color: 'var(--t1)' }}>
+          <h2 className="display text-4xl sm:text-5xl font-bold leading-tight" style={{ color: 'var(--t1)' }}>
             Everything a real panel would do.<br />
-            <span className="gradient-text">Delivered in two minutes.</span>
+            <span style={{ color: 'var(--teal)' }}>Delivered in two minutes.</span>
           </h2>
         </div>
 
@@ -81,10 +81,19 @@ export default function FeaturesSection() {
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-px"
           style={{ background: 'var(--border)' }}>
           {FEATURES.map((f) => (
-            <div key={f.title} className="flex flex-col gap-5 p-8 transition-colors duration-200"
-              style={{ background: 'var(--bg)' }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = 'var(--bg1)')}
-              onMouseLeave={(e) => (e.currentTarget.style.background = 'var(--bg)')}>
+            <div
+              key={f.title}
+              className="flex flex-col gap-5 p-8 transition-all duration-300"
+              style={{
+                background: 'radial-gradient(ellipse 100% 100% at 50% 50%, rgba(var(--teal-rgb), 0.08) 0%, transparent 70%), var(--bg)',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'radial-gradient(ellipse 100% 100% at 50% 50%, rgba(var(--teal-rgb), 0.12) 0%, transparent 70%), var(--bg1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'radial-gradient(ellipse 100% 100% at 50% 50%, rgba(var(--teal-rgb), 0.08) 0%, transparent 70%), var(--bg)';
+              }}
+            >
               <div style={{ color: 'var(--t2)' }}>{f.icon}</div>
               <div className="flex flex-col gap-2">
                 <h3 className="text-sm font-medium tracking-wide" style={{ color: 'var(--t1)' }}>{f.title}</h3>

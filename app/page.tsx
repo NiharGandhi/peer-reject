@@ -3,7 +3,6 @@
 import { useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import UploadZone, { UploadZoneHandle } from '@/components/UploadZone';
-import LanguageToggle from '@/components/LanguageToggle';
 import ThemeToggle from '@/components/ThemeToggle';
 import WhySection from '@/components/WhySection';
 import AgentsSection from '@/components/AgentsSection';
@@ -39,28 +38,46 @@ export default function HomePage() {
   };
 
   return (
-    <main className="min-h-screen bg-(--bg) flex flex-col overflow-hidden">
+    <main className="landing-page min-h-screen flex flex-col" style={{ background: 'transparent' }}>
 
       {/* Nav */}
-      <nav className="flex items-center justify-between px-6 sm:px-12 py-6 shrink-0 relative z-10">
+      <nav className="sticky top-0 z-30 flex items-center justify-between px-6 sm:px-12 py-6 shrink-0 border-b border-[var(--border)]"
+        style={{ background: 'rgba(6,4,15,0.80)', backdropFilter: 'blur(12px)' }}>
         <div className="flex items-baseline gap-1 select-none">
           <span className="text-lg font-normal tracking-[0.2em] uppercase" style={{ color: 'var(--t1)' }}>Peer</span>
-          <span className="text-lg font-light tracking-[0.2em] uppercase" style={{ color: 'var(--t3)' }}>Reject</span>
+          <span className="text-lg font-light tracking-[0.2em] uppercase" style={{ color: 'var(--gold)' }}>Reject</span>
         </div>
         <div className="flex items-center gap-5">
           <a href="/blog" className="text-[10px] uppercase tracking-widest hidden sm:block font-medium transition-colors hover:opacity-80" style={{ color: 'var(--t3)' }}>Blog</a>
           <span className="text-[10px] uppercase tracking-widest hidden sm:block font-medium" style={{ color: 'var(--t3)' }}>K2 Think V2</span>
           <ThemeToggle />
-          <LanguageToggle />
         </div>
       </nav>
 
-      {/* Ambient glow — sits behind content */}
-      <div className="pointer-events-none fixed inset-0 z-0">
-        <div className="absolute top-[-10%] left-[30%] w-[700px] h-[700px] rounded-full opacity-[0.07] blur-[140px]"
-          style={{ backgroundColor: 'var(--t1)' }} />
-        <div className="absolute top-[20%] right-[-10%] w-[500px] h-[500px] rounded-full opacity-[0.04] blur-[120px]"
-          style={{ backgroundColor: 'var(--cr)' }} />
+      {/* Gold bowtie background — same as results page */}
+      <div className="bowtie-bg pointer-events-none fixed inset-0 z-0 overflow-hidden" style={{ background: '#06040f' }}>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <svg viewBox="0 0 1200 600" className="w-full h-full" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <path id="lbt"  d="M 0 300 L 0 480 C 200 480 380 340 600 300 C 820 260 1000 120 1200 120 L 1200 480 C 1000 480 820 340 600 300 C 380 260 200 120 0 120 Z" />
+              <path id="lbt2" d="M 0 300 L 0 420 C 220 420 390 330 600 300 C 810 270 980 180 1200 180 L 1200 420 C 980 420 810 330 600 300 C 390 270 220 180 0 180 Z" />
+              <path id="lbt3" d="M 0 300 L 0 360 C 240 360 400 315 600 300 C 800 285 960 240 1200 240 L 1200 360 C 960 360 800 315 600 300 C 400 285 240 240 0 240 Z" />
+              <filter id="lf100" x="-60%" y="-200%" width="220%" height="500%"><feGaussianBlur in="SourceGraphic" stdDeviation="60" /></filter>
+              <filter id="lf35"  x="-40%" y="-150%" width="180%" height="400%"><feGaussianBlur in="SourceGraphic" stdDeviation="28" /></filter>
+              <filter id="lf24"  x="-30%" y="-100%" width="160%" height="300%"><feGaussianBlur in="SourceGraphic" stdDeviation="16" /></filter>
+            </defs>
+            <use href="#lbt"  fill="rgba(160,100,10,0.55)"  filter="url(#lf100)" />
+            <use href="#lbt2" fill="rgba(212,160,30,0.50)"  filter="url(#lf35)"  />
+            <use href="#lbt3" fill="rgba(245,210,100,0.45)" filter="url(#lf24)"  />
+          </svg>
+        </div>
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] h-[180px] rounded-full blur-[80px]"
+          style={{ background: 'rgba(255,230,140,0.30)' }} />
+        <div className="absolute left-0 top-1/2 w-[380px] h-[500px] rounded-full blur-[120px]"
+          style={{ background: 'rgba(180,110,20,0.28)', transform: 'translateY(-50%) translateX(-30%)' }} />
+        <div className="absolute right-0 top-1/2 w-[380px] h-[500px] rounded-full blur-[120px]"
+          style={{ background: 'rgba(180,110,20,0.28)', transform: 'translateY(-50%) translateX(30%)' }} />
+        <div className="bowtie-overlay absolute inset-0" style={{ background: 'rgba(0,0,0,0.65)' }} />
       </div>
 
       {/* ── Main hero ─────────────────────────────────── */}
@@ -73,13 +90,13 @@ export default function HomePage() {
           <div className="flex flex-col gap-8">
 
             <div className="inline-flex items-center gap-2 self-start text-[10px] font-medium tracking-[0.25em] uppercase py-1.5 px-4 rounded-full"
-              style={{ color: 'var(--t3)', border: '1px solid var(--border)', background: 'rgba(255,255,255,0.03)' }}>
-              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse shrink-0" />
+              style={{ color: 'var(--gold)', border: '1px solid var(--gold-border)', background: 'var(--gold-lo)' }}>
+              <span className="w-1.5 h-1.5 rounded-full animate-pulse shrink-0" style={{ background: 'var(--gold)' }} />
               Live AI Review Simulator
             </div>
 
             <h1 className="display font-bold leading-[1.08]"
-              style={{ fontSize: 'clamp(2.8rem, 6vw, 5rem)', color: 'var(--t1)' }}>
+              style={{ fontSize: 'clamp(3rem, 6.5vw, 5.5rem)', color: 'var(--t1)' }}>
               Get a{' '}
               <span className="gradient-text">hostile</span>
               {' '}review.<br />
@@ -96,7 +113,7 @@ export default function HomePage() {
                 type="button"
                 onClick={() => uploadRef.current?.open()}
                 className="premium-glow inline-flex items-center gap-2 px-7 py-3.5 text-xs tracking-widest uppercase font-bold transition-all hover:scale-105 active:scale-95"
-                style={{ background: 'var(--t1)', color: 'var(--bg)', borderRadius: 'var(--radius-full)' }}
+                style={{ background: 'var(--gold)', color: 'var(--bg)', borderRadius: 'var(--radius-full)' }}
               >
                 Try &rarr;
               </button>
@@ -113,7 +130,7 @@ export default function HomePage() {
                 { value: '4', label: 'report sections' },
               ].map((s) => (
                 <div key={s.label} className="flex flex-col gap-0.5">
-                  <span className="font-mono text-lg font-medium" style={{ color: 'var(--t1)' }}>{s.value}</span>
+                  <span className="font-mono text-lg font-medium" style={{ color: 'var(--gold)' }}>{s.value}</span>
                   <span className="text-[10px] uppercase tracking-widest" style={{ color: 'var(--t3)' }}>{s.label}</span>
                 </div>
               ))}

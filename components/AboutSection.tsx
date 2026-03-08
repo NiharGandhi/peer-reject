@@ -17,12 +17,12 @@ export default function AboutSection() {
           {/* Left: about copy */}
           <div className="flex flex-col gap-8">
             <div className="flex flex-col gap-4">
-              <p className="text-[10px] font-mono uppercase tracking-[0.3em]" style={{ color: 'var(--t3)' }}>
+              <p className="text-[10px] font-mono uppercase tracking-[0.3em]" style={{ color: 'var(--cr)' }}>
                 About
               </p>
-              <h2 className="display text-3xl sm:text-4xl font-bold leading-tight" style={{ color: 'var(--t1)' }}>
+              <h2 className="display text-4xl sm:text-5xl font-bold leading-tight" style={{ color: 'var(--t1)' }}>
                 Built for researchers.<br />
-                <span className="gradient-text">Powered by K2 Think V2.</span>
+                <span style={{ color: 'var(--cr)' }}>Powered by K2 Think V2.</span>
               </h2>
             </div>
 
@@ -49,8 +49,19 @@ export default function AboutSection() {
           {/* Right: stats grid */}
           <div className="grid grid-cols-2 gap-px" style={{ background: 'var(--border)' }}>
             {STATS.map((s) => (
-              <div key={s.label} className="flex flex-col gap-2 p-8"
-                style={{ background: 'var(--bg1)' }}>
+              <div
+                key={s.label}
+                className="flex flex-col gap-2 p-8 transition-all duration-300"
+                style={{
+                  background: 'radial-gradient(ellipse 90% 90% at 50% 50%, rgba(var(--cr-rgb), 0.06) 0%, transparent 70%), var(--bg1)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'radial-gradient(ellipse 90% 90% at 50% 50%, rgba(var(--cr-rgb), 0.09) 0%, transparent 70%), var(--bg1)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'radial-gradient(ellipse 90% 90% at 50% 50%, rgba(var(--cr-rgb), 0.06) 0%, transparent 70%), var(--bg1)';
+                }}
+              >
                 <span className="display text-2xl sm:text-3xl font-bold" style={{ color: 'var(--t1)' }}>
                   {s.value}
                 </span>

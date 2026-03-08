@@ -2,10 +2,9 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import LanguageToggle from '@/components/LanguageToggle';
 import ThemeToggle from '@/components/ThemeToggle';
 import { useLang } from '@/contexts/LanguageContext';
-import { classifyDocument, AGENT_META, type AgentId, type Classification } from '@/lib/agentConfig';
+import { classifyDocument, AGENT_META, AGENT_ACCENTS, type AgentId, type Classification } from '@/lib/agentConfig';
 
 type Stage = 'classifying' | 'reviewing' | 'synthesizing' | 'done';
 
@@ -38,8 +37,8 @@ function getSynthesisStep(text: string): number {
 }
 
 // ─── Brain animation ──────────────────────────────────────────────────────────
-function BrainAnimation({ status, label }: { status: 'waiting' | 'thinking' | 'writing'; label: string }) {
-  const color = status === 'writing' ? '#d4af37' : 'var(--t1)';
+function BrainAnimation({ status, label, accent }: { status: 'waiting' | 'thinking' | 'writing'; label: string; accent?: string }) {
+  const color = status === 'writing' && accent ? accent : 'var(--t1)';
   const baseOpacity = status === 'waiting' ? 0.06 : 0.14;
   return (
     <div className="flex flex-col items-center justify-center h-full gap-5 select-none">
@@ -132,7 +131,16 @@ const SYNTHESIS_STEPS = [
 
 function SynthesisPanel({ step }: { step: number }) {
   return (
-    <div className="ui-card overflow-hidden">
+    <div
+      className="overflow-hidden transition-all duration-300"
+      style={{
+        background: 'linear-gradient(to bottom, rgba(var(--gold-rgb), 0.08) 0%, var(--bg1) 40%)',
+        borderBottom: '2px solid var(--gold)',
+        borderRadius: 'var(--radius-card)',
+        border: '1px solid var(--border)',
+        boxShadow: 'var(--shadow-card)',
+      }}
+    >
       <div className="flex items-center gap-4 px-6 py-5 border-b border-[var(--border)]">
         <div className="relative w-9 h-9 shrink-0 flex items-center justify-center">
           <span className="absolute inset-0 rounded-full border border-[var(--gold)] animate-ping opacity-25" />
@@ -317,8 +325,36 @@ export default function ReviewPage() {
   const usePersonaScroll = agents.length === 3 || agents.length > 4;
 
   return (
-    <main className="min-h-screen bg-(--bg) flex flex-col">
-      <nav className="flex items-center justify-between px-6 sm:px-12 py-6 shrink-0 border-b border-[var(--border)]">
+    <main className="review-page min-h-screen flex flex-col" style={{ background: 'transparent' }}>
+
+      {/* Gold bowtie background */}
+      <div className="bowtie-bg pointer-events-none fixed inset-0 z-0 overflow-hidden" style={{ background: '#06040f' }}>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <svg viewBox="0 0 1200 600" className="w-full h-full" preserveAspectRatio="xMidYMid slice">
+            <defs>
+              <path id="rbt"  d="M 0 300 L 0 480 C 200 480 380 340 600 300 C 820 260 1000 120 1200 120 L 1200 480 C 1000 480 820 340 600 300 C 380 260 200 120 0 120 Z" />
+              <path id="rbt2" d="M 0 300 L 0 420 C 220 420 390 330 600 300 C 810 270 980 180 1200 180 L 1200 420 C 980 420 810 330 600 300 C 390 270 220 180 0 180 Z" />
+              <path id="rbt3" d="M 0 300 L 0 360 C 240 360 400 315 600 300 C 800 285 960 240 1200 240 L 1200 360 C 960 360 800 315 600 300 C 400 285 240 240 0 240 Z" />
+              <filter id="rf100" x="-60%" y="-200%" width="220%" height="500%"><feGaussianBlur in="SourceGraphic" stdDeviation="60" /></filter>
+              <filter id="rf35"  x="-40%" y="-150%" width="180%" height="400%"><feGaussianBlur in="SourceGraphic" stdDeviation="28" /></filter>
+              <filter id="rf24"  x="-30%" y="-100%" width="160%" height="300%"><feGaussianBlur in="SourceGraphic" stdDeviation="16" /></filter>
+            </defs>
+            <use href="#rbt"  fill="rgba(160,100,10,0.55)"  filter="url(#rf100)" />
+            <use href="#rbt2" fill="rgba(212,160,30,0.50)"  filter="url(#rf35)"  />
+            <use href="#rbt3" fill="rgba(245,210,100,0.45)" filter="url(#rf24)"  />
+          </svg>
+        </div>
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] h-[180px] rounded-full blur-[80px]"
+          style={{ background: 'rgba(255,230,140,0.30)' }} />
+        <div className="absolute left-0 top-1/2 w-[380px] h-[500px] rounded-full blur-[120px]"
+          style={{ background: 'rgba(180,110,20,0.28)', transform: 'translateY(-50%) translateX(-30%)' }} />
+        <div className="absolute right-0 top-1/2 w-[380px] h-[500px] rounded-full blur-[120px]"
+          style={{ background: 'rgba(180,110,20,0.28)', transform: 'translateY(-50%) translateX(30%)' }} />
+        <div className="bowtie-overlay absolute inset-0" style={{ background: 'rgba(0,0,0,0.65)' }} />
+      </div>
+
+      <nav className="relative z-10 flex items-center justify-between px-6 sm:px-12 py-6 shrink-0 border-b border-[var(--border)]"
+        style={{ background: 'rgba(6,4,15,0.80)', backdropFilter: 'blur(12px)' }}>
         <div className="flex items-baseline gap-1 select-none">
           <span className="text-lg font-normal tracking-[0.2em] uppercase" style={{ color: 'var(--t1)' }}>Peer</span>
           <span className="text-lg font-light tracking-[0.2em] uppercase" style={{ color: 'var(--t3)' }}>Reject</span>
@@ -332,11 +368,10 @@ export default function ReviewPage() {
             )}
           </div>
           <ThemeToggle />
-          <LanguageToggle />
         </div>
       </nav>
 
-      <div className="flex-1 w-full max-w-7xl mx-auto px-6 sm:px-12 pt-10 pb-24 flex flex-col gap-10">
+      <div className="relative z-10 flex-1 w-full max-w-7xl mx-auto px-6 sm:px-12 pt-10 pb-24 flex flex-col gap-10">
 
         {/* ── Classifying screen ── */}
         {stage === 'classifying' && (
@@ -344,12 +379,12 @@ export default function ReviewPage() {
             <div className="relative w-20 h-20 flex items-center justify-center">
               {[0, 1, 2].map((i) => (
                 <span key={i} className="absolute rounded-full animate-ping"
-                  style={{ inset: `${i * 6}px`, border: '1px solid var(--t1)', opacity: 0.1 + i * 0.03, animationDuration: `${1.5 + i * 0.4}s` }} />
+                  style={{ inset: `${i * 6}px`, border: '1px solid var(--cr)', opacity: 0.15 + i * 0.05, animationDuration: `${1.5 + i * 0.4}s` }} />
               ))}
-              <span className="w-4 h-4 rounded-full" style={{ background: 'var(--t1)', opacity: 0.6 }} />
+              <span className="w-4 h-4 rounded-full" style={{ background: 'var(--cr)', opacity: 0.8 }} />
             </div>
             <div className="text-center flex flex-col gap-2">
-              <p className="text-lg font-light" style={{ color: 'var(--t1)' }}>Analyzing document type...</p>
+              <p className="text-lg font-light" style={{ color: 'var(--cr)' }}>Analyzing document type...</p>
               <p className="text-xs uppercase tracking-widest" style={{ color: 'var(--t3)' }}>
                 Selecting appropriate review panel
               </p>
@@ -362,7 +397,7 @@ export default function ReviewPage() {
           <>
             <div className="flex flex-col gap-1">
               <div className="flex items-baseline gap-3 flex-wrap">
-                <h1 className="display text-3xl font-normal" style={{ color: 'var(--t1)' }}>
+                <h1 className="display text-3xl sm:text-4xl font-normal" style={{ color: 'var(--t1)' }}>
                   {t('review.title')}
                 </h1>
                 {classification && (
@@ -399,6 +434,7 @@ export default function ReviewPage() {
               <div className={usePersonaScroll ? 'persona-scroll' : `grid ${gridCols} gap-6`}>
                 {agents.map((id) => {
                   const meta = AGENT_META[id];
+                  const accent = AGENT_ACCENTS[id] ?? 'var(--gold)';
                   const rawText = reviews[id] ?? '';
                   const isDone = done[id] ?? false;
                   const reviewContent = extractReviewContent(rawText, meta.reviewHeader);
@@ -409,12 +445,12 @@ export default function ReviewPage() {
                   const statusBadge = isDone
                     ? null // replaced by DoneAnimation
                     : isWriting
-                    ? <span className="flex items-center gap-1.5 text-[9px] uppercase tracking-wider font-medium" style={{ color: 'var(--gold)' }}>
-                        <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: 'var(--gold)' }} />Writing
+                    ? <span className="flex items-center gap-1.5 text-[9px] uppercase tracking-wider font-medium" style={{ color: accent }}>
+                        <span className="w-1.5 h-1.5 rounded-full animate-pulse" style={{ background: accent }} />Writing
                       </span>
                     : rawText
-                    ? <span className="flex items-center gap-1.5 text-[9px] uppercase tracking-wider" style={{ color: 'var(--t3)' }}>
-                        <span className="w-1.5 h-1.5 rounded-full animate-ping" style={{ background: 'var(--t3)', opacity: 0.5 }} />Thinking
+                    ? <span className="flex items-center gap-1.5 text-[9px] uppercase tracking-wider" style={{ color: accent }}>
+                        <span className="w-1.5 h-1.5 rounded-full animate-ping" style={{ background: accent, opacity: 0.5 }} />Thinking
                       </span>
                     : <span className="text-[9px] uppercase tracking-wider" style={{ color: 'var(--t3)' }}>Waiting</span>;
 
@@ -424,11 +460,30 @@ export default function ReviewPage() {
                   return (
                     <div
                       key={id}
-                      className={`${usePersonaScroll ? 'persona-scroll-item' : ''} ui-card flex flex-col overflow-hidden`}
-                      style={{ height: `${CARD_HEIGHT}px` }}
+                      className={`${usePersonaScroll ? 'persona-scroll-item' : ''} flex flex-col overflow-hidden transition-all duration-300`}
+                      style={{
+                        height: `${CARD_HEIGHT}px`,
+                        background: `linear-gradient(to bottom, ${accent}08 0%, var(--bg) 40%)`,
+                        borderBottom: `2px solid ${accent}30`,
+                        borderRadius: 'var(--radius-card)',
+                        border: '1px solid var(--border)',
+                        boxShadow: 'var(--shadow-card)',
+                      }}
+                      onMouseEnter={(e) => {
+                        e.currentTarget.style.background = `linear-gradient(to bottom, ${accent}12 0%, var(--bg1) 40%)`;
+                      }}
+                      onMouseLeave={(e) => {
+                        e.currentTarget.style.background = `linear-gradient(to bottom, ${accent}08 0%, var(--bg) 40%)`;
+                      }}
                     >
                       {/* Card header */}
                       <div className="flex items-center gap-3 px-5 py-4 border-b border-[var(--border)] shrink-0">
+                        <span
+                          className="font-mono text-[10px] tracking-widest font-bold tabular-nums px-2 py-1 rounded shrink-0"
+                          style={{ color: accent, background: `${accent}18` }}
+                        >
+                          {String(agents.indexOf(id) + 1).padStart(2, '0')}
+                        </span>
                         <div className="flex-1 min-w-0">
                           <p className="text-sm font-medium" style={{ color: 'var(--t1)' }}>{meta.name}</p>
                           <p className="text-[10px] uppercase tracking-widest mt-0.5" style={{ color: 'var(--t3)' }}>{meta.role}</p>
@@ -448,7 +503,7 @@ export default function ReviewPage() {
                           </div>
                         ) : (
                           <div className="flex-1">
-                            <BrainAnimation status={animStatus} label={animLabel} />
+                            <BrainAnimation status={animStatus} label={animLabel} accent={accent} />
                           </div>
                         )}
 

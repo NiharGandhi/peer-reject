@@ -26,16 +26,20 @@ function parseWeaknesses(text: string): Weakness[] {
       if (!tag) return [];
       const severity = TAG_MAP[tag];
       const rest = line.slice(tag.length).trim();
-      const pipeIdx = rest.indexOf('|');
-      if (pipeIdx === -1) return [{ severity, title: rest, explanation: '' }];
-      return [{ severity, title: rest.slice(0, pipeIdx).trim(), explanation: rest.slice(pipeIdx + 1).trim() }];
+      // Split on | or em/en dash (– —), with optional surrounding spaces
+      const sepMatch = rest.match(/\s*[|–—]\s*/);
+      if (!sepMatch) return [{ severity, title: rest, explanation: '' }];
+      const sepIdx = rest.indexOf(sepMatch[0]);
+      const title = rest.slice(0, sepIdx).trim();
+      const explanation = rest.slice(sepIdx + sepMatch[0].length).trim();
+      return [{ severity, title, explanation }];
     });
 }
 
 const SEV_CONFIG = {
-  fatal: { label: 'Fatal', color: 'var(--cr)' },
-  major: { label: 'Major', color: 'var(--t1)' },
-  minor: { label: 'Minor', color: 'var(--t3)' },
+  fatal: { label: 'Fatal', color: '#ef4444' },
+  major: { label: 'Major', color: '#f97316' },
+  minor: { label: 'Minor', color: '#eab308' },
 };
 
 export default function WeaknessReport({ text }: { text: string }) {
@@ -54,9 +58,13 @@ export default function WeaknessReport({ text }: { text: string }) {
                 {cfg.label}
               </span>
               <div className="flex-1 flex flex-col gap-3">
-                <span className="text-lg font-normal tracking-wide" style={{ color: 'var(--t1)' }}>{w.title}</span>
+                <span className="text-lg font-normal tracking-wide" style={{ color: 'var(--t1)' }}>{renderInline(w.title)}</span>
                 {w.explanation && (
-                  <span className="text-sm font-light leading-relaxed max-w-3xl" style={{ color: 'var(--t2)' }}>{renderInline(w.explanation)}</span>
+                  <div className="text-sm font-light leading-relaxed max-w-3xl space-y-2" style={{ color: 'var(--t2)' }}>
+                    {w.explanation.split(/\n+/).map((p) => p.trim()).filter(Boolean).map((para, j) => (
+                      <p key={j} className="leading-[1.7]">{renderInline(para)}</p>
+                    ))}
+                  </div>
                 )}
               </div>
             </div>

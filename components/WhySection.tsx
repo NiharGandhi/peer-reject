@@ -30,7 +30,7 @@ export default function WhySection() {
             <p className="text-[10px] font-mono uppercase tracking-[0.3em]" style={{ color: 'var(--t3)' }}>
               Why Peer Reject
             </p>
-            <h2 className="display text-3xl sm:text-4xl font-bold leading-tight" style={{ color: 'var(--t1)' }}>
+            <h2 className="display text-4xl sm:text-5xl font-bold leading-tight" style={{ color: 'var(--t1)' }}>
               The committee is not on your side.<br />
               <span className="gradient-text">We are.</span>
             </h2>
@@ -45,7 +45,7 @@ export default function WhySection() {
               <div key={p.num}
                 className="flex gap-8 py-10"
                 style={{ borderTop: i > 0 ? '1px solid var(--border)' : 'none' }}>
-                <span className="font-mono text-[11px] tracking-widest shrink-0 mt-1" style={{ color: 'var(--t3)' }}>
+                <span className="font-mono text-[11px] tracking-widest shrink-0 mt-1 font-medium" style={{ color: 'var(--gold)' }}>
                   {p.num}
                 </span>
                 <div className="flex flex-col gap-3">
