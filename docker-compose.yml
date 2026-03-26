@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  peer-reject:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: peer-reject-app
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - NEXT_TELEMETRY_DISABLED=1
+      # K2 API client configuration (referenced in lib/k2client.ts)
+      - K2_API_KEY=${K2_API_KEY}
+      - K2_API_URL=${K2_API_URL}
+      # Optional: OpenTelemetry instrumentation (referenced in instrumentation.ts)
+      - OTEL_EXPORTER_OTLP_ENDPOINT=${OTEL_EXPORTER_OTLP_ENDPOINT:-}
+      - OTEL_SERVICE_NAME=${OTEL_SERVICE_NAME:-peer-reject}
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    networks:
+      - peer-reject-network
+
+networks:
+  peer-reject-network:
+    driver: bridge
